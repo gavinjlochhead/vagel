@@ -5,7 +5,7 @@ from flask_login import (
     login_required, current_user,
 )
 import config
-from modules import csv_logger, ha_client
+from modules import csv_logger, ha_client, fitbit
 
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
@@ -68,6 +68,7 @@ def checkin():
 
     if request.method == "POST":
         now = datetime.now()
+        snapshot = fitbit.get_fitbit_snapshot()
         row = {
             "date": today,
             "time": now.strftime("%H:%M"),
@@ -84,23 +85,23 @@ def checkin():
             "wake_time": request.form.get("wake_time", ""),
             "caffeine_count": request.form.get("caffeine_count", ""),
             "caffeine_timing": request.form.get("caffeine_timing", ""),
-            # Fitbit fields left empty until Phase 2A
-            "steps": "",
-            "resting_hr": "",
-            "mins_very_active": "",
-            "mins_fairly_active": "",
-            "mins_sedentary": "",
-            "activity_calories": "",
-            "distance": "",
-            "floors": "",
+            # Fitbit fields from HA snapshot
+            "steps": snapshot["steps"] if snapshot["steps"] is not None else "",
+            "resting_hr": snapshot["resting_hr"] if snapshot["resting_hr"] is not None else "",
+            "mins_very_active": snapshot["mins_very_active"] if snapshot["mins_very_active"] is not None else "",
+            "mins_fairly_active": snapshot["mins_fairly_active"] if snapshot["mins_fairly_active"] is not None else "",
+            "mins_sedentary": snapshot["mins_sedentary"] if snapshot["mins_sedentary"] is not None else "",
+            "activity_calories": snapshot["activity_calories"] if snapshot["activity_calories"] is not None else "",
+            "distance": snapshot["distance"] if snapshot["distance"] is not None else "",
+            "floors": snapshot["floors"] if snapshot["floors"] is not None else "",
             # Nutrition fields left empty until Phase 3B
             "protein_g": "",
             "carbs_g": "",
             "fat_g": "",
             "fibre_g": "",
-            # Screen time left empty until Phase 2A
-            "screen_time_total": "",
-            "screen_time_last_hr": "",
+            # Screen time from HA snapshot
+            "screen_time_total": snapshot["screen_time_total"] if snapshot["screen_time_total"] is not None else "",
+            "screen_time_last_hr": snapshot["screen_time_last_hr"] if snapshot["screen_time_last_hr"] is not None else "",
             "note": request.form.get("note", ""),
         }
 
@@ -130,7 +131,8 @@ def checkin():
     all_rows = csv_logger.read_recent(100)
     todays_count = sum(1 for r in all_rows if r.get("date") == today)
 
-    return render_template("checkin.html", todays_count=todays_count)
+    snapshot = fitbit.get_fitbit_snapshot()
+    return render_template("checkin.html", todays_count=todays_count, fitbit=snapshot)
 
 
 @app.route("/nutrition")

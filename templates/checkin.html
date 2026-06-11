@@ -209,6 +209,55 @@
       </div>
 
     </form>
+
+    {# Biometrics panel — only shown if at least one Fitbit value is available #}
+    {% if fitbit and (fitbit.steps is not none or fitbit.resting_hr is not none or
+        fitbit.mins_very_active is not none or fitbit.mins_fairly_active is not none or
+        fitbit.mins_sedentary is not none or fitbit.activity_calories is not none or
+        fitbit.screen_time_total is not none) %}
+    <div class="card mt-4 border-secondary-subtle">
+      <div class="card-header bg-body-secondary text-muted small fw-semibold">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+             class="bi bi-activity me-1" viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+                d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15z"/>
+        </svg>
+        Today's biometrics
+      </div>
+      <div class="card-body py-2">
+        <div class="row row-cols-2 row-cols-sm-3 g-2 small text-muted">
+          <div class="col d-flex align-items-center gap-2">
+            <span class="text-secondary">&#x1F463;</span>
+            <span><span class="fw-medium text-body">{{ fitbit.steps if fitbit.steps is not none else '—' }}</span> steps</span>
+          </div>
+          <div class="col d-flex align-items-center gap-2">
+            <span class="text-secondary">&#x2764;&#xFE0F;</span>
+            <span><span class="fw-medium text-body">{{ fitbit.resting_hr if fitbit.resting_hr is not none else '—' }}</span> bpm resting</span>
+          </div>
+          <div class="col d-flex align-items-center gap-2">
+            <span class="text-secondary">&#x26A1;</span>
+            <span><span class="fw-medium text-body">{{ fitbit.mins_very_active if fitbit.mins_very_active is not none else '—' }}</span> min very active</span>
+          </div>
+          <div class="col d-flex align-items-center gap-2">
+            <span class="text-secondary">&#x1F6B6;</span>
+            <span><span class="fw-medium text-body">{{ fitbit.mins_fairly_active if fitbit.mins_fairly_active is not none else '—' }}</span> min fairly active</span>
+          </div>
+          <div class="col d-flex align-items-center gap-2">
+            <span class="text-secondary">&#x1F4BA;</span>
+            <span><span class="fw-medium text-body">{{ fitbit.mins_sedentary if fitbit.mins_sedentary is not none else '—' }}</span> min sedentary</span>
+          </div>
+          <div class="col d-flex align-items-center gap-2">
+            <span class="text-secondary">&#x1F525;</span>
+            <span><span class="fw-medium text-body">{{ fitbit.activity_calories if fitbit.activity_calories is not none else '—' }}</span> active cal</span>
+          </div>
+          <div class="col d-flex align-items-center gap-2">
+            <span class="text-secondary">&#x1F4F1;</span>
+            <span><span class="fw-medium text-body">{{ fitbit.screen_time_total if fitbit.screen_time_total is not none else '—' }}</span> min screen time</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
