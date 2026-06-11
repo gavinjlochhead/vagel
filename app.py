@@ -183,7 +183,34 @@ def checkin():
 @app.route("/nutrition")
 @login_required
 def nutrition():
-    return render_template("nutrition.html")
+    summary = nutrition_module.get_today_summary()
+    return render_template("nutrition.html", summary=summary)
+
+
+@app.route("/nutrition/search")
+@login_required
+def nutrition_search():
+    q = request.args.get("q", "").strip()
+    results = nutrition_module.search_food(q) if q else []
+    return jsonify(results)
+
+
+@app.route("/nutrition/log", methods=["POST"])
+@login_required
+def nutrition_log():
+    nutrition_module.log_food(
+        food_name=request.form.get("food_name", ""),
+        brand=request.form.get("brand", ""),
+        calories=float(request.form.get("calories") or 0),
+        protein_g=float(request.form.get("protein_g") or 0),
+        carbs_g=float(request.form.get("carbs_g") or 0),
+        fat_g=float(request.form.get("fat_g") or 0),
+        fibre_g=float(request.form.get("fibre_g") or 0),
+        portion_g=float(request.form.get("portion_g") or 0),
+        meal_period=request.form.get("meal_period", ""),
+    )
+    flash("Food logged.", "success")
+    return redirect(url_for("nutrition"))
 
 
 @app.route("/trends")
