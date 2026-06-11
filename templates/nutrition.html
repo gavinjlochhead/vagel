@@ -3,8 +3,273 @@
 {% block title %}Nutrition — Polyvagal Tracker{% endblock %}
 
 {% block content %}
-<h2>Nutrition</h2>
-<div class="alert alert-info mt-3">
-  <strong>Coming soon.</strong> Nutrition tracking will be available in Phase 3B.
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-10">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Nutrition</h2>
+      {% if summary and summary.item_count > 0 %}
+        {% if summary.traffic_light == 'green' %}
+          <span class="badge bg-success fs-6">Green</span>
+        {% elif summary.traffic_light == 'yellow' %}
+          <span class="badge bg-warning text-dark fs-6">Yellow</span>
+        {% else %}
+          <span class="badge bg-danger fs-6">Red</span>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <div class="row g-3 mb-4">
+
+      <!-- Search column -->
+      <div class="col-12 col-md-7">
+        <div class="card h-100">
+          <div class="card-header fw-semibold">Search Food</div>
+          <div class="card-body">
+            <div class="input-group mb-3">
+              <input type="text" id="searchInput" class="form-control"
+                     placeholder="e.g. oat milk, chicken breast…"
+                     aria-label="Food search">
+              <button class="btn btn-primary" id="searchBtn" type="button">Search</button>
+            </div>
+            <div id="searchResults"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary column -->
+      <div class="col-12 col-md-5">
+        <div class="card h-100">
+          <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+            Today's Summary
+            {% if summary %}
+              {% if summary.traffic_light == 'green' %}
+                <span class="badge bg-success">Green</span>
+              {% elif summary.traffic_light == 'yellow' %}
+                <span class="badge bg-warning text-dark">Yellow</span>
+              {% else %}
+                <span class="badge bg-danger">Red</span>
+              {% endif %}
+            {% endif %}
+          </div>
+          <div class="card-body">
+            {% if summary and summary.item_count > 0 %}
+              <dl class="row mb-2 small">
+                <dt class="col-7">Calories</dt>
+                <dd class="col-5 text-end fw-medium">{{ summary.calories }} kcal</dd>
+                <dt class="col-7">Protein</dt>
+                <dd class="col-5 text-end fw-medium">{{ summary.protein_g }} g</dd>
+                <dt class="col-7">Carbohydrates</dt>
+                <dd class="col-5 text-end fw-medium">{{ summary.carbs_g }} g</dd>
+                <dt class="col-7">Fat</dt>
+                <dd class="col-5 text-end fw-medium">{{ summary.fat_g }} g</dd>
+                <dt class="col-7">Fibre</dt>
+                <dd class="col-5 text-end fw-medium">{{ summary.fibre_g }} g</dd>
+              </dl>
+              {% if summary.meals_logged %}
+                <p class="small text-muted mb-0">
+                  Meals: <span class="text-body">{{ summary.meals_logged | join(', ') }}</span>
+                </p>
+              {% endif %}
+            {% else %}
+              <p class="text-muted small mb-0">Nothing logged today.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's food log table -->
+    <div class="card">
+      <div class="card-header fw-semibold">Today's Food Log</div>
+      <div class="card-body p-0">
+        {% if summary and summary.item_count > 0 %}
+          {# We'll render rows via a separate query — expose via template variable #}
+          <div id="todayLog">
+            <p class="text-muted small p-3 mb-0">
+              {{ summary.item_count }} item(s) logged today.
+              <a href="{{ url_for('nutrition') }}">Reload to see the list.</a>
+            </p>
+          </div>
+        {% else %}
+          <p class="text-muted small p-3 mb-0">Nothing logged yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
 </div>
+
+<!-- Portion entry modal -->
+<div class="modal fade" id="portionModal" tabindex="-1" aria-labelledby="portionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="portionModalLabel">Log Food</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('nutrition_log') }}">
+        <div class="modal-body">
+          <input type="hidden" name="food_name" id="modal_food_name">
+          <input type="hidden" name="brand" id="modal_brand">
+          <input type="hidden" name="calories_per_100g" id="modal_cal100">
+          <input type="hidden" name="protein_per_100g" id="modal_pro100">
+          <input type="hidden" name="carbs_per_100g" id="modal_carb100">
+          <input type="hidden" name="fat_per_100g" id="modal_fat100">
+          <input type="hidden" name="fibre_per_100g" id="modal_fib100">
+          <!-- computed fields -->
+          <input type="hidden" name="calories" id="modal_calories">
+          <input type="hidden" name="protein_g" id="modal_protein_g">
+          <input type="hidden" name="carbs_g" id="modal_carbs_g">
+          <input type="hidden" name="fat_g" id="modal_fat_g">
+          <input type="hidden" name="fibre_g" id="modal_fibre_g">
+
+          <p class="fw-semibold mb-1" id="modal_display_name"></p>
+          <p class="text-muted small mb-3" id="modal_display_macros"></p>
+
+          <div class="mb-3">
+            <label for="portion_g" class="form-label">Portion (g)</label>
+            <input type="number" class="form-control" id="portion_g" name="portion_g"
+                   min="1" max="5000" step="1" value="100" required>
+          </div>
+          <div class="mb-0">
+            <label for="meal_period" class="form-label">Meal period</label>
+            <select class="form-select" id="meal_period" name="meal_period" required>
+              <option value="Breakfast">Breakfast</option>
+              <option value="Morning snack">Morning snack</option>
+              <option value="Lunch">Lunch</option>
+              <option value="Afternoon snack">Afternoon snack</option>
+              <option value="Dinner">Dinner</option>
+              <option value="Evening snack">Evening snack</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Log Food</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const resultsDiv = document.getElementById('searchResults');
+
+  const portionModal = new bootstrap.Modal(document.getElementById('portionModal'));
+  const portionInput = document.getElementById('portion_g');
+
+  // Per-100g hidden fields
+  const fCal100  = document.getElementById('modal_cal100');
+  const fPro100  = document.getElementById('modal_pro100');
+  const fCarb100 = document.getElementById('modal_carb100');
+  const fFat100  = document.getElementById('modal_fat100');
+  const fFib100  = document.getElementById('modal_fib100');
+
+  // Computed hidden fields
+  const fCal    = document.getElementById('modal_calories');
+  const fPro    = document.getElementById('modal_protein_g');
+  const fCarb   = document.getElementById('modal_carbs_g');
+  const fFat    = document.getElementById('modal_fat_g');
+  const fFib    = document.getElementById('modal_fibre_g');
+
+  function round1(v) { return Math.round(v * 10) / 10; }
+
+  function updateComputed() {
+    const portion = parseFloat(portionInput.value) || 0;
+    const factor = portion / 100;
+    fCal.value  = round1(parseFloat(fCal100.value  || 0) * factor);
+    fPro.value  = round1(parseFloat(fPro100.value  || 0) * factor);
+    fCarb.value = round1(parseFloat(fCarb100.value || 0) * factor);
+    fFat.value  = round1(parseFloat(fFat100.value  || 0) * factor);
+    fFib.value  = round1(parseFloat(fFib100.value  || 0) * factor);
+  }
+
+  portionInput.addEventListener('input', updateComputed);
+
+  function openModal(item) {
+    document.getElementById('modal_food_name').value = item.name;
+    document.getElementById('modal_brand').value     = item.brand;
+    fCal100.value  = item.calories_per_100g;
+    fPro100.value  = item.protein_per_100g;
+    fCarb100.value = item.carbs_per_100g;
+    fFat100.value  = item.fat_per_100g;
+    fFib100.value  = item.fibre_per_100g;
+
+    document.getElementById('modal_display_name').textContent =
+      item.name + (item.brand ? ' — ' + item.brand : '');
+    document.getElementById('modal_display_macros').textContent =
+      'Per 100 g: ' + item.calories_per_100g + ' kcal | ' +
+      item.protein_per_100g + 'g protein | ' +
+      item.carbs_per_100g + 'g carbs | ' +
+      item.fat_per_100g + 'g fat | ' +
+      item.fibre_per_100g + 'g fibre';
+
+    portionInput.value = 100;
+    updateComputed();
+    portionModal.show();
+  }
+
+  function renderResults(items) {
+    if (!items || items.length === 0) {
+      resultsDiv.innerHTML = '<p class="text-muted small mt-2">No results found.</p>';
+      return;
+    }
+    const cards = items.map(item => {
+      const brand = item.brand ? `<small class="text-muted">${escHtml(item.brand)}</small>` : '';
+      return `<div class="card mb-2 food-result-card" style="cursor:pointer"
+                   onclick='openFoodModal(${JSON.stringify(item)})'>
+        <div class="card-body py-2 px-3">
+          <div class="fw-semibold">${escHtml(item.name)}</div>
+          ${brand}
+          <div class="small text-muted mt-1">
+            ${item.calories_per_100g} kcal &bull;
+            ${item.protein_per_100g}g protein &bull;
+            ${item.carbs_per_100g}g carbs &bull;
+            ${item.fat_per_100g}g fat &bull;
+            ${item.fibre_per_100g}g fibre
+            <span class="text-muted">(per 100 g)</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    resultsDiv.innerHTML = cards;
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Expose to inline onclick handlers
+  window.openFoodModal = openModal;
+
+  async function doSearch() {
+    const q = searchInput.value.trim();
+    if (!q) return;
+    resultsDiv.innerHTML = '<p class="text-muted small mt-2">Searching…</p>';
+    try {
+      const resp = await fetch('/nutrition/search?q=' + encodeURIComponent(q));
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+      renderResults(data);
+    } catch (e) {
+      resultsDiv.innerHTML = '<p class="text-danger small mt-2">Search failed. Please try again.</p>';
+    }
+  }
+
+  searchBtn.addEventListener('click', doSearch);
+  searchInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+  });
+})();
+</script>
 {% endblock %}

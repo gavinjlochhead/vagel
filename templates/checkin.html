@@ -277,6 +277,36 @@
       </div>
     </div>
     {% endif %}
+
+    {# Nutrition summary panel — only shown if food has been logged today #}
+    {% if nutrition_summary and nutrition_summary.item_count > 0 %}
+    <div class="card mt-4 border-secondary-subtle">
+      <div class="card-header bg-body-secondary text-muted small fw-semibold d-flex justify-content-between align-items-center">
+        <span>Today's nutrition</span>
+        {% if nutrition_summary.traffic_light == 'green' %}
+          <span class="badge bg-success">Green</span>
+        {% elif nutrition_summary.traffic_light == 'yellow' %}
+          <span class="badge bg-warning text-dark">Yellow</span>
+        {% else %}
+          <span class="badge bg-danger">Red</span>
+        {% endif %}
+      </div>
+      <div class="card-body py-2">
+        <p class="small mb-0">
+          <span class="fw-medium text-body">{{ nutrition_summary.calories }}</span> kcal
+          &nbsp;|&nbsp;
+          <span class="fw-medium text-body">{{ nutrition_summary.protein_g }}g</span> protein
+          &nbsp;|&nbsp;
+          <span class="fw-medium text-body">{{ nutrition_summary.carbs_g }}g</span> carbs
+          &nbsp;|&nbsp;
+          <span class="fw-medium text-body">{{ nutrition_summary.fat_g }}g</span> fat
+          &nbsp;|&nbsp;
+          <span class="fw-medium text-body">{{ nutrition_summary.fibre_g }}g</span> fibre
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
   </div>
 </div>
 {% endblock %}
