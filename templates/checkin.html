@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Check-in — Polyvagal Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Check-in</h2>
+      {% if todays_count > 0 %}
+        <span class="badge bg-secondary fs-6">{{ todays_count }} today</span>
+      {% endif %}
+    </div>
+
+    <form method="post" action="{{ url_for('checkin') }}">
+
+      <!-- Triggered by -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">When</h5>
+          <div class="mb-3">
+            <label for="triggered_by" class="form-label">Triggered by</label>
+            <select class="form-select" id="triggered_by" name="triggered_by">
+              <option value="Morning (08:00)">Morning (08:00)</option>
+              <option value="Mid-morning (11:00)">Mid-morning (11:00)</option>
+              <option value="Afternoon (14:00)">Afternoon (14:00)</option>
+              <option value="Late afternoon (17:00)">Late afternoon (17:00)</option>
+              <option value="Evening (20:00)">Evening (20:00)</option>
+              <option value="Manual">Manual</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nervous system state -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Nervous System State</h5>
+          <div class="mb-0">
+            <label for="ns_state" class="form-label">Current state</label>
+            <select class="form-select" id="ns_state" name="ns_state" required>
+              <option value="" disabled selected>Select state…</option>
+              <option value="Green - Calm &amp; Engaged">Green - Calm &amp; Engaged</option>
+              <option value="Yellow - Wired &amp; Anxious">Yellow - Wired &amp; Anxious</option>
+              <option value="Yellow - Flat &amp; Disconnected">Yellow - Flat &amp; Disconnected</option>
+              <option value="Red - Shutdown / Freeze">Red - Shutdown / Freeze</option>
+              <option value="Red - Overwhelmed / Meltdown">Red - Overwhelmed / Meltdown</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Energy -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Energy</h5>
+          <div class="mb-3">
+            <label for="energy" class="form-label">Energy level: <span id="energy_val">3</span>/5</label>
+            <input type="range" class="form-range" id="energy" name="energy"
+                   min="1" max="5" step="1" value="3"
+                   oninput="document.getElementById('energy_val').textContent=this.value">
+            <div class="d-flex justify-content-between small text-muted">
+              <span>1 — Very low</span><span>5 — Very high</span>
+            </div>
+          </div>
+          <div class="mb-0">
+            <label for="energy_why" class="form-label">Why?</label>
+            <select class="form-select" id="energy_why" name="energy_why">
+              <option value="">— select reason —</option>
+              <option value="Drained by meetings">Drained by meetings</option>
+              <option value="Poor sleep">Poor sleep</option>
+              <option value="Hyperfocus crash">Hyperfocus crash</option>
+              <option value="Good movement">Good movement</option>
+              <option value="Well rested">Well rested</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Focus -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Focus</h5>
+          <div class="mb-3">
+            <label for="focus" class="form-label">Focus level: <span id="focus_val">3</span>/5</label>
+            <input type="range" class="form-range" id="focus" name="focus"
+                   min="1" max="5" step="1" value="3"
+                   oninput="document.getElementById('focus_val').textContent=this.value">
+            <div class="d-flex justify-content-between small text-muted">
+              <span>1 — Very scattered</span><span>5 — Laser focused</span>
+            </div>
+          </div>
+          <div class="mb-0">
+            <label for="focus_why" class="form-label">Why?</label>
+            <select class="form-select" id="focus_why" name="focus_why">
+              <option value="">— select reason —</option>
+              <option value="Too many meetings">Too many meetings</option>
+              <option value="Brain fog">Brain fog</option>
+              <option value="Hyperfocus">Hyperfocus</option>
+              <option value="In flow">In flow</option>
+              <option value="Scattered">Scattered</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connection -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Connection</h5>
+          <div class="mb-3">
+            <label for="connection" class="form-label">Connection feeling: <span id="connection_val">3</span>/5</label>
+            <input type="range" class="form-range" id="connection" name="connection"
+                   min="1" max="5" step="1" value="3"
+                   oninput="document.getElementById('connection_val').textContent=this.value">
+            <div class="d-flex justify-content-between small text-muted">
+              <span>1 — Isolated</span><span>5 — Very connected</span>
+            </div>
+          </div>
+          <div class="mb-0">
+            <label for="connection_why" class="form-label">Why?</label>
+            <select class="form-select" id="connection_why" name="connection_why">
+              <option value="">— select reason —</option>
+              <option value="Close with partner">Close with partner</option>
+              <option value="Isolated">Isolated</option>
+              <option value="After social drain">After social drain</option>
+              <option value="RSD triggered">RSD triggered</option>
+              <option value="Feeling supported">Feeling supported</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sleep -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Sleep</h5>
+          <div class="row g-3">
+            <div class="col-12 col-sm-4">
+              <label for="sleep_hours" class="form-label">Hours slept</label>
+              <input type="number" class="form-control" id="sleep_hours" name="sleep_hours"
+                     min="0" max="24" step="0.5" placeholder="e.g. 7.5">
+            </div>
+            <div class="col-12 col-sm-4">
+              <label for="sleep_quality" class="form-label">Quality</label>
+              <select class="form-select" id="sleep_quality" name="sleep_quality">
+                <option value="">— select —</option>
+                <option value="Deep/refreshing">Deep/refreshing</option>
+                <option value="Light/unrefreshing">Light/unrefreshing</option>
+                <option value="Broken/interrupted">Broken/interrupted</option>
+                <option value="Couldn't sleep">Couldn't sleep</option>
+                <option value="Didn't track">Didn't track</option>
+              </select>
+            </div>
+            <div class="col-12 col-sm-4">
+              <label for="wake_time" class="form-label">Wake time</label>
+              <select class="form-select" id="wake_time" name="wake_time">
+                <option value="">— select —</option>
+                <option value="Before 06:00">Before 06:00</option>
+                <option value="06:00-07:00">06:00–07:00</option>
+                <option value="07:00-08:00">07:00–08:00</option>
+                <option value="08:00-09:00">08:00–09:00</option>
+                <option value="After 09:00">After 09:00</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Caffeine -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Caffeine</h5>
+          <div class="row g-3">
+            <div class="col-12 col-sm-4">
+              <label for="caffeine_count" class="form-label">Drinks today</label>
+              <input type="number" class="form-control" id="caffeine_count" name="caffeine_count"
+                     min="0" max="6" step="1" value="0">
+            </div>
+            <div class="col-12 col-sm-8">
+              <label for="caffeine_timing" class="form-label">Last caffeine timing</label>
+              <select class="form-select" id="caffeine_timing" name="caffeine_timing">
+                <option value="None today">None today</option>
+                <option value="Morning only">Morning only</option>
+                <option value="Before 2pm">Before 2pm</option>
+                <option value="After 3pm">After 3pm</option>
+                <option value="After 5pm">After 5pm</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Note <span class="text-muted fw-normal small">(optional)</span></h5>
+          <textarea class="form-control" id="note" name="note" rows="3"
+                    placeholder="Anything else worth noting…"></textarea>
+        </div>
+      </div>
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary btn-lg">Save check-in</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
