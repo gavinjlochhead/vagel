@@ -3,99 +3,90 @@
 {% block title %}Insights — Polyvagal Tracker{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-  <div class="col">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-        <div>
-          <h2 class="card-title mb-1">Weekly Pattern Analysis</h2>
-          <p class="text-muted mb-0">Analyses your last 30 days of check-ins.</p>
-        </div>
-        <form method="post" action="{{ url_for('insights_generate') }}">
-          <button type="submit" class="btn btn-primary btn-lg">
-            Generate insight
-          </button>
-        </form>
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-9">
+
+    <div class="page-header">
+      <h1>Insights</h1>
+      <form method="post" action="{{ url_for('insights_generate') }}">
+        <button type="submit" class="btn btn-primary">Generate insight</button>
+      </form>
+    </div>
+
+    <p class="text-muted mb-4" style="font-size:.9rem;">Analyses your last 30 days of check-ins using Claude AI.</p>
+
+    {% if row_count < 7 %}
+    <div class="alert alert-info mb-4" style="font-size:.88rem;">
+      <strong>Keep checking in</strong> — insights work best with 2+ weeks of data.
+      You have {{ row_count }} check-in{{ 's' if row_count != 1 else '' }} so far.
+    </div>
+    {% endif %}
+
+    {% if weekly_insight %}
+
+    <div class="card mb-4" style="border-left: 4px solid var(--pv-primary) !important; background: linear-gradient(135deg, #f0fdfa, #fff);">
+      <div class="card-body py-4 px-4">
+        <div style="font-size:.72rem; font-weight:700; color:var(--pv-primary); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.5rem;">Key finding</div>
+        <p class="fw-semibold mb-0" style="font-size:1.1rem; line-height:1.5;">{{ weekly_insight.headline }}</p>
       </div>
     </div>
+
+    {% if weekly_insight.patterns %}
+    <div class="card mb-4">
+      <div class="card-header">Patterns</div>
+      <div class="list-group list-group-flush">
+        {% for pattern in weekly_insight.patterns %}
+        <div class="list-group-item py-3 px-4">
+          <p class="fw-semibold mb-1" style="font-size:.9rem;">{{ pattern.observation }}</p>
+          <p class="mb-0 small" style="color:var(--pv-muted);">{{ pattern.implication }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-header" style="color: var(--pv-green);">✓ Protective factors</div>
+          <ul class="list-group list-group-flush">
+            {% for factor in weekly_insight.protective_factors %}
+            <li class="list-group-item" style="font-size:.875rem;">{{ factor }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="card h-100">
+          <div class="card-header" style="color: var(--pv-yellow);">⚠ Watch for</div>
+          <ul class="list-group list-group-flush">
+            {% for sign in weekly_insight.warning_signs %}
+            <li class="list-group-item" style="font-size:.875rem;">{{ sign }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4" style="border-left: 4px solid var(--pv-green) !important;">
+      <div class="card-header" style="color: var(--pv-green);">This week's recommendation</div>
+      <div class="card-body">
+        <p class="mb-0" style="font-size:.95rem; line-height:1.6;">{{ weekly_insight.recommendation }}</p>
+      </div>
+    </div>
+
+    {% else %}
+
+    <div class="card">
+      <div class="card-body text-center py-5">
+        <div style="font-size:2rem; margin-bottom:1rem;">🧠</div>
+        <p class="fw-semibold mb-1" style="color:var(--pv-text);">No insight generated yet</p>
+        <p class="text-muted mb-0" style="font-size:.875rem;">Hit "Generate insight" above after you have a few weeks of data.</p>
+      </div>
+    </div>
+
+    {% endif %}
+
   </div>
 </div>
-
-{% if row_count < 7 %}
-<div class="alert alert-info">
-  <strong>Keep checking in</strong> — insights work best with 2+ weeks of data.
-  You have {{ row_count }} check-in{{ 's' if row_count != 1 else '' }} so far.
-</div>
-{% endif %}
-
-{% if weekly_insight %}
-
-  {# Headline card #}
-  <div class="card border-primary shadow-sm mb-4">
-    <div class="card-body text-center py-4">
-      <p class="display-6 fw-semibold text-primary mb-0">{{ weekly_insight.headline }}</p>
-    </div>
-  </div>
-
-  {# Patterns #}
-  {% if weekly_insight.patterns %}
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-light fw-semibold">Patterns</div>
-    <div class="list-group list-group-flush">
-      {% for pattern in weekly_insight.patterns %}
-      <div class="list-group-item py-3">
-        <p class="fw-semibold mb-1">{{ pattern.observation }}</p>
-        <p class="text-muted mb-0 small">{{ pattern.implication }}</p>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  {# Protective factors + Warning signs #}
-  <div class="row mb-4">
-    <div class="col-md-6 mb-3 mb-md-0">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-success bg-opacity-10 text-success fw-semibold">
-          Protective factors
-        </div>
-        <ul class="list-group list-group-flush">
-          {% for factor in weekly_insight.protective_factors %}
-          <li class="list-group-item">{{ factor }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-warning bg-opacity-10 text-warning fw-semibold">
-          Watch for
-        </div>
-        <ul class="list-group list-group-flush">
-          {% for sign in weekly_insight.warning_signs %}
-          <li class="list-group-item">{{ sign }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  {# Recommendation #}
-  <div class="card border-success shadow-sm mb-4">
-    <div class="card-header bg-success bg-opacity-10 text-success fw-semibold">
-      Recommendation for this week
-    </div>
-    <div class="card-body">
-      <p class="fs-5 mb-0">{{ weekly_insight.recommendation }}</p>
-    </div>
-  </div>
-
-{% else %}
-
-  <div class="text-center py-5 text-muted">
-    <p class="fs-5">No insight generated yet.</p>
-    <p>Hit the button above after you have a few weeks of data.</p>
-  </div>
-
-{% endif %}
 {% endblock %}

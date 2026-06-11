@@ -3,19 +3,31 @@
 {% block title %}Login — Polyvagal Tracker{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
+<div class="row justify-content-center" style="min-height: 80vh; align-items: center; display: flex;">
   <div class="col-12 col-sm-8 col-md-5 col-lg-4">
+    <div class="text-center mb-4">
+      <div style="font-size: 2.5rem; line-height: 1; margin-bottom: .5rem;">🌿</div>
+      <h1 style="font-size: 1.4rem; font-weight: 700; color: var(--pv-text);">Polyvagal Tracker</h1>
+      <p class="text-muted" style="font-size: .88rem;">NS regulation · ADHD-aware · Daily check-in</p>
+    </div>
     <div class="card shadow-sm">
       <div class="card-body p-4">
-        <h4 class="card-title text-center mb-4">Polyvagal Tracker</h4>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} py-2 mb-3" style="font-size:.875rem">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
         <form method="post" action="{{ url_for('login') }}">
-          <div class="mb-3">
+          <div class="mb-4">
             <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password"
-                   placeholder="Enter password" autofocus required>
+            <input type="password" class="form-control form-control-lg" id="password" name="password"
+                   placeholder="Enter password" autofocus required
+                   style="border-radius: 10px; font-size: .95rem;">
           </div>
           <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Log in</button>
+            <button type="submit" class="btn btn-primary btn-lg">Sign in</button>
           </div>
         </form>
       </div>

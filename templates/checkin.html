@@ -4,186 +4,187 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-12 col-lg-8">
+  <div class="col-12 col-lg-7">
 
+    <!-- Claude insight card -->
     {% if claude_response %}
-    <div class="card border-0 shadow-sm mb-4" style="border-left: 4px solid #6c757d !important;">
-      <div class="card-body">
-        <h6 class="text-muted mb-3">NS Insight</h6>
-        <p class="mb-2"><strong>{{ claude_response.state_interpretation }}</strong></p>
-        <p class="mb-2">→ {{ claude_response.immediate_suggestion }}</p>
-        {% if claude_response.pattern_observation %}
-        <p class="mb-2 text-muted small">Pattern: {{ claude_response.pattern_observation }}</p>
-        {% endif %}
-        {% if claude_response.nutrition_note %}
-        <p class="mb-1 text-muted small">Nutrition: {{ claude_response.nutrition_note }}</p>
-        {% endif %}
-        {% if claude_response.activity_note %}
-        <p class="mb-0 text-muted small">Activity: {{ claude_response.activity_note }}</p>
+    <div class="card insight-card mb-4">
+      <div class="card-body p-4">
+        <div class="insight-label">NS Insight</div>
+        <p class="mb-2 fw-semibold" style="font-size:.95rem; line-height:1.5;">{{ claude_response.state_interpretation }}</p>
+        <p class="mb-0" style="font-size:.9rem; color: var(--pv-primary);">→ {{ claude_response.immediate_suggestion }}</p>
+        {% if claude_response.pattern_observation or claude_response.nutrition_note or claude_response.activity_note %}
+        <hr class="my-3" style="border-color: var(--pv-border);">
+        <div class="d-flex flex-column gap-1">
+          {% if claude_response.pattern_observation %}
+          <p class="mb-0 small text-muted"><span class="fw-medium text-body">Pattern</span> — {{ claude_response.pattern_observation }}</p>
+          {% endif %}
+          {% if claude_response.activity_note %}
+          <p class="mb-0 small text-muted"><span class="fw-medium text-body">Activity</span> — {{ claude_response.activity_note }}</p>
+          {% endif %}
+          {% if claude_response.nutrition_note %}
+          <p class="mb-0 small text-muted"><span class="fw-medium text-body">Nutrition</span> — {{ claude_response.nutrition_note }}</p>
+          {% endif %}
+        </div>
         {% endif %}
       </div>
     </div>
     {% endif %}
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="mb-0">Check-in</h2>
+    <!-- Page header -->
+    <div class="page-header">
+      <h1>Check-in</h1>
       {% if todays_count > 0 %}
-        <span class="badge bg-secondary fs-6">{{ todays_count }} today</span>
+        <span class="badge rounded-pill" style="background:var(--pv-primary); font-size:.8rem; padding:.35rem .75rem;">
+          {{ todays_count }} today
+        </span>
       {% endif %}
     </div>
 
     <form method="post" action="{{ url_for('checkin') }}">
 
-      <!-- Triggered by -->
+      <!-- When -->
       <div class="card mb-3">
+        <div class="card-header">When</div>
         <div class="card-body">
-          <h5 class="card-title">When</h5>
-          <div class="mb-3">
-            <label for="triggered_by" class="form-label">Triggered by</label>
-            <select class="form-select" id="triggered_by" name="triggered_by">
-              <option value="Morning (08:00)">Morning (08:00)</option>
-              <option value="Mid-morning (11:00)">Mid-morning (11:00)</option>
-              <option value="Afternoon (14:00)">Afternoon (14:00)</option>
-              <option value="Late afternoon (17:00)">Late afternoon (17:00)</option>
-              <option value="Evening (20:00)">Evening (20:00)</option>
-              <option value="Manual">Manual</option>
-            </select>
-          </div>
+          <label for="triggered_by" class="form-label">Triggered by</label>
+          <select class="form-select" id="triggered_by" name="triggered_by">
+            <option value="Morning (08:00)">Morning (08:00)</option>
+            <option value="Mid-morning (11:00)">Mid-morning (11:00)</option>
+            <option value="Afternoon (14:00)">Afternoon (14:00)</option>
+            <option value="Late afternoon (17:00)">Late afternoon (17:00)</option>
+            <option value="Evening (20:00)">Evening (20:00)</option>
+            <option value="Manual">Manual</option>
+          </select>
         </div>
       </div>
 
-      <!-- Nervous system state -->
+      <!-- State -->
       <div class="card mb-3">
+        <div class="card-header">Nervous System State</div>
         <div class="card-body">
-          <h5 class="card-title">Nervous System State</h5>
-          <div class="mb-0">
-            <label for="ns_state" class="form-label">Current state</label>
-            <select class="form-select" id="ns_state" name="ns_state" required>
-              <option value="" disabled selected>Select state…</option>
-              <option value="Green - Calm &amp; Engaged">Green - Calm &amp; Engaged</option>
-              <option value="Yellow - Wired &amp; Anxious">Yellow - Wired &amp; Anxious</option>
-              <option value="Yellow - Flat &amp; Disconnected">Yellow - Flat &amp; Disconnected</option>
-              <option value="Red - Shutdown / Freeze">Red - Shutdown / Freeze</option>
-              <option value="Red - Overwhelmed / Meltdown">Red - Overwhelmed / Meltdown</option>
-            </select>
-          </div>
+          <label for="ns_state" class="form-label">Current state</label>
+          <select class="form-select" id="ns_state" name="ns_state" required style="font-weight:500;">
+            <option value="" disabled selected>Select state…</option>
+            <option value="Green - Calm &amp; Engaged"   style="color:#16a34a; font-weight:600;">🟢 Green — Calm &amp; Engaged</option>
+            <option value="Yellow - Wired &amp; Anxious" style="color:#d97706; font-weight:600;">🟡 Yellow — Wired &amp; Anxious</option>
+            <option value="Yellow - Flat &amp; Disconnected" style="color:#d97706; font-weight:600;">🟡 Yellow — Flat &amp; Disconnected</option>
+            <option value="Red - Shutdown / Freeze"       style="color:#dc2626; font-weight:600;">🔴 Red — Shutdown / Freeze</option>
+            <option value="Red - Overwhelmed / Meltdown"  style="color:#dc2626; font-weight:600;">🔴 Red — Overwhelmed / Meltdown</option>
+          </select>
         </div>
       </div>
 
-      <!-- Energy -->
+      <!-- Energy / Focus / Connection -->
       <div class="card mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Energy</h5>
-          <div class="mb-3">
-            <label for="energy" class="form-label">Energy level: <span id="energy_val">3</span>/5</label>
+        <div class="card-header">Energy · Focus · Connection</div>
+        <div class="card-body d-flex flex-column gap-4">
+
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label for="energy" class="form-label mb-0">Energy</label>
+              <span class="range-val" id="energy_val">3</span>
+            </div>
             <input type="range" class="form-range" id="energy" name="energy"
                    min="1" max="5" step="1" value="3"
                    oninput="document.getElementById('energy_val').textContent=this.value">
-            <div class="d-flex justify-content-between small text-muted">
-              <span>1 — Very low</span><span>5 — Very high</span>
+            <div class="d-flex justify-content-between small mt-1" style="color:var(--pv-muted);">
+              <span>Very low</span><span>Very high</span>
+            </div>
+            <div class="mt-2">
+              <select class="form-select form-select-sm" id="energy_why" name="energy_why">
+                <option value="">Why? (optional)</option>
+                <option>Drained by meetings</option>
+                <option>Poor sleep</option>
+                <option>Hyperfocus crash</option>
+                <option>Good movement</option>
+                <option>Well rested</option>
+                <option>Other</option>
+              </select>
             </div>
           </div>
-          <div class="mb-0">
-            <label for="energy_why" class="form-label">Why?</label>
-            <select class="form-select" id="energy_why" name="energy_why">
-              <option value="">— select reason —</option>
-              <option value="Drained by meetings">Drained by meetings</option>
-              <option value="Poor sleep">Poor sleep</option>
-              <option value="Hyperfocus crash">Hyperfocus crash</option>
-              <option value="Good movement">Good movement</option>
-              <option value="Well rested">Well rested</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-        </div>
-      </div>
 
-      <!-- Focus -->
-      <div class="card mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Focus</h5>
-          <div class="mb-3">
-            <label for="focus" class="form-label">Focus level: <span id="focus_val">3</span>/5</label>
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label for="focus" class="form-label mb-0">Focus</label>
+              <span class="range-val" id="focus_val">3</span>
+            </div>
             <input type="range" class="form-range" id="focus" name="focus"
                    min="1" max="5" step="1" value="3"
                    oninput="document.getElementById('focus_val').textContent=this.value">
-            <div class="d-flex justify-content-between small text-muted">
-              <span>1 — Very scattered</span><span>5 — Laser focused</span>
+            <div class="d-flex justify-content-between small" style="color:var(--pv-muted); margin-top:.25rem;">
+              <span>Scattered</span><span>Laser focused</span>
+            </div>
+            <div class="mt-2">
+              <select class="form-select form-select-sm" id="focus_why" name="focus_why">
+                <option value="">Why? (optional)</option>
+                <option>Too many meetings</option>
+                <option>Brain fog</option>
+                <option>Hyperfocus</option>
+                <option>In flow</option>
+                <option>Scattered</option>
+                <option>Other</option>
+              </select>
             </div>
           </div>
-          <div class="mb-0">
-            <label for="focus_why" class="form-label">Why?</label>
-            <select class="form-select" id="focus_why" name="focus_why">
-              <option value="">— select reason —</option>
-              <option value="Too many meetings">Too many meetings</option>
-              <option value="Brain fog">Brain fog</option>
-              <option value="Hyperfocus">Hyperfocus</option>
-              <option value="In flow">In flow</option>
-              <option value="Scattered">Scattered</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-        </div>
-      </div>
 
-      <!-- Connection -->
-      <div class="card mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Connection</h5>
-          <div class="mb-3">
-            <label for="connection" class="form-label">Connection feeling: <span id="connection_val">3</span>/5</label>
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label for="connection" class="form-label mb-0">Connection</label>
+              <span class="range-val" id="connection_val">3</span>
+            </div>
             <input type="range" class="form-range" id="connection" name="connection"
                    min="1" max="5" step="1" value="3"
                    oninput="document.getElementById('connection_val').textContent=this.value">
-            <div class="d-flex justify-content-between small text-muted">
-              <span>1 — Isolated</span><span>5 — Very connected</span>
+            <div class="d-flex justify-content-between small" style="color:var(--pv-muted); margin-top:.25rem;">
+              <span>Isolated</span><span>Very connected</span>
+            </div>
+            <div class="mt-2">
+              <select class="form-select form-select-sm" id="connection_why" name="connection_why">
+                <option value="">Why? (optional)</option>
+                <option>Close with partner</option>
+                <option>Isolated</option>
+                <option>After social drain</option>
+                <option>RSD triggered</option>
+                <option>Feeling supported</option>
+                <option>Other</option>
+              </select>
             </div>
           </div>
-          <div class="mb-0">
-            <label for="connection_why" class="form-label">Why?</label>
-            <select class="form-select" id="connection_why" name="connection_why">
-              <option value="">— select reason —</option>
-              <option value="Close with partner">Close with partner</option>
-              <option value="Isolated">Isolated</option>
-              <option value="After social drain">After social drain</option>
-              <option value="RSD triggered">RSD triggered</option>
-              <option value="Feeling supported">Feeling supported</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+
         </div>
       </div>
 
       <!-- Sleep -->
       <div class="card mb-3">
+        <div class="card-header">Sleep</div>
         <div class="card-body">
-          <h5 class="card-title">Sleep</h5>
           <div class="row g-3">
-            <div class="col-12 col-sm-4">
-              <label for="sleep_hours" class="form-label">Hours slept</label>
+            <div class="col-4">
+              <label for="sleep_hours" class="form-label">Hours</label>
               <input type="number" class="form-control" id="sleep_hours" name="sleep_hours"
-                     min="0" max="24" step="0.5" placeholder="e.g. 7.5">
+                     min="0" max="24" step="0.5" placeholder="7.5">
             </div>
-            <div class="col-12 col-sm-4">
+            <div class="col-8">
               <label for="sleep_quality" class="form-label">Quality</label>
               <select class="form-select" id="sleep_quality" name="sleep_quality">
                 <option value="">— select —</option>
-                <option value="Deep/refreshing">Deep/refreshing</option>
-                <option value="Light/unrefreshing">Light/unrefreshing</option>
-                <option value="Broken/interrupted">Broken/interrupted</option>
-                <option value="Couldn't sleep">Couldn't sleep</option>
-                <option value="Didn't track">Didn't track</option>
+                <option>Deep/refreshing</option>
+                <option>Light/unrefreshing</option>
+                <option>Broken/interrupted</option>
+                <option>Couldn't sleep</option>
+                <option>Didn't track</option>
               </select>
             </div>
-            <div class="col-12 col-sm-4">
+            <div class="col-12">
               <label for="wake_time" class="form-label">Wake time</label>
               <select class="form-select" id="wake_time" name="wake_time">
                 <option value="">— select —</option>
-                <option value="Before 06:00">Before 06:00</option>
-                <option value="06:00-07:00">06:00–07:00</option>
-                <option value="07:00-08:00">07:00–08:00</option>
-                <option value="08:00-09:00">08:00–09:00</option>
-                <option value="After 09:00">After 09:00</option>
+                <option>Before 06:00</option>
+                <option>06:00–07:00</option>
+                <option>07:00–08:00</option>
+                <option>08:00–09:00</option>
+                <option>After 09:00</option>
               </select>
             </div>
           </div>
@@ -192,22 +193,22 @@
 
       <!-- Caffeine -->
       <div class="card mb-3">
+        <div class="card-header">Caffeine</div>
         <div class="card-body">
-          <h5 class="card-title">Caffeine</h5>
           <div class="row g-3">
-            <div class="col-12 col-sm-4">
-              <label for="caffeine_count" class="form-label">Drinks today</label>
+            <div class="col-4">
+              <label for="caffeine_count" class="form-label">Drinks</label>
               <input type="number" class="form-control" id="caffeine_count" name="caffeine_count"
                      min="0" max="6" step="1" value="0">
             </div>
-            <div class="col-12 col-sm-8">
-              <label for="caffeine_timing" class="form-label">Last caffeine timing</label>
+            <div class="col-8">
+              <label for="caffeine_timing" class="form-label">Last timing</label>
               <select class="form-select" id="caffeine_timing" name="caffeine_timing">
-                <option value="None today">None today</option>
-                <option value="Morning only">Morning only</option>
-                <option value="Before 2pm">Before 2pm</option>
-                <option value="After 3pm">After 3pm</option>
-                <option value="After 5pm">After 5pm</option>
+                <option>None today</option>
+                <option>Morning only</option>
+                <option>Before 2pm</option>
+                <option>After 3pm</option>
+                <option>After 5pm</option>
               </select>
             </div>
           </div>
@@ -216,93 +217,107 @@
 
       <!-- Note -->
       <div class="card mb-4">
+        <div class="card-header">Note <span style="font-weight:400; text-transform:none; letter-spacing:0;">(optional)</span></div>
         <div class="card-body">
-          <h5 class="card-title">Note <span class="text-muted fw-normal small">(optional)</span></h5>
           <textarea class="form-control" id="note" name="note" rows="3"
-                    placeholder="Anything else worth noting…"></textarea>
+                    placeholder="Anything worth noting — context, triggers, what's going on…"
+                    style="resize:vertical;"></textarea>
         </div>
       </div>
 
-      <div class="d-grid">
+      <div class="d-grid mb-4">
         <button type="submit" class="btn btn-primary btn-lg">Save check-in</button>
       </div>
 
     </form>
 
-    {# Biometrics panel — only shown if at least one Fitbit value is available #}
+    <!-- Biometrics panel -->
     {% if fitbit and (fitbit.steps is not none or fitbit.resting_hr is not none or
-        fitbit.mins_very_active is not none or fitbit.mins_fairly_active is not none or
-        fitbit.mins_sedentary is not none or fitbit.activity_calories is not none or
+        fitbit.mins_very_active is not none or fitbit.mins_sedentary is not none or
         fitbit.screen_time_total is not none) %}
-    <div class="card mt-4 border-secondary-subtle">
-      <div class="card-header bg-body-secondary text-muted small fw-semibold">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
-             class="bi bi-activity me-1" viewBox="0 0 16 16">
-          <path fill-rule="evenodd"
-                d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15z"/>
-        </svg>
-        Today's biometrics
-      </div>
-      <div class="card-body py-2">
-        <div class="row row-cols-2 row-cols-sm-3 g-2 small text-muted">
-          <div class="col d-flex align-items-center gap-2">
-            <span class="text-secondary">&#x1F463;</span>
-            <span><span class="fw-medium text-body">{{ fitbit.steps if fitbit.steps is not none else '—' }}</span> steps</span>
+    <div class="card mb-3">
+      <div class="card-header">Today's Biometrics</div>
+      <div class="card-body">
+        <div class="row g-2">
+          {% if fitbit.steps is not none %}
+          <div class="col-6 col-sm-4">
+            <div class="data-pill">
+              <span class="dp-icon">👟</span>
+              <span class="dp-val">{{ fitbit.steps }}</span>
+              <span class="dp-lbl">steps</span>
+            </div>
           </div>
-          <div class="col d-flex align-items-center gap-2">
-            <span class="text-secondary">&#x2764;&#xFE0F;</span>
-            <span><span class="fw-medium text-body">{{ fitbit.resting_hr if fitbit.resting_hr is not none else '—' }}</span> bpm resting</span>
+          {% endif %}
+          {% if fitbit.resting_hr is not none %}
+          <div class="col-6 col-sm-4">
+            <div class="data-pill">
+              <span class="dp-icon">❤️</span>
+              <span class="dp-val">{{ fitbit.resting_hr }}</span>
+              <span class="dp-lbl">bpm RHR</span>
+            </div>
           </div>
-          <div class="col d-flex align-items-center gap-2">
-            <span class="text-secondary">&#x26A1;</span>
-            <span><span class="fw-medium text-body">{{ fitbit.mins_very_active if fitbit.mins_very_active is not none else '—' }}</span> min very active</span>
+          {% endif %}
+          {% if fitbit.mins_very_active is not none %}
+          <div class="col-6 col-sm-4">
+            <div class="data-pill">
+              <span class="dp-icon">⚡</span>
+              <span class="dp-val">{{ fitbit.mins_very_active }}</span>
+              <span class="dp-lbl">min active</span>
+            </div>
           </div>
-          <div class="col d-flex align-items-center gap-2">
-            <span class="text-secondary">&#x1F6B6;</span>
-            <span><span class="fw-medium text-body">{{ fitbit.mins_fairly_active if fitbit.mins_fairly_active is not none else '—' }}</span> min fairly active</span>
+          {% endif %}
+          {% if fitbit.mins_sedentary is not none %}
+          <div class="col-6 col-sm-4">
+            <div class="data-pill">
+              <span class="dp-icon">🪑</span>
+              <span class="dp-val">{{ fitbit.mins_sedentary }}</span>
+              <span class="dp-lbl">min sedentary</span>
+            </div>
           </div>
-          <div class="col d-flex align-items-center gap-2">
-            <span class="text-secondary">&#x1F4BA;</span>
-            <span><span class="fw-medium text-body">{{ fitbit.mins_sedentary if fitbit.mins_sedentary is not none else '—' }}</span> min sedentary</span>
+          {% endif %}
+          {% if fitbit.activity_calories is not none %}
+          <div class="col-6 col-sm-4">
+            <div class="data-pill">
+              <span class="dp-icon">🔥</span>
+              <span class="dp-val">{{ fitbit.activity_calories }}</span>
+              <span class="dp-lbl">active cal</span>
+            </div>
           </div>
-          <div class="col d-flex align-items-center gap-2">
-            <span class="text-secondary">&#x1F525;</span>
-            <span><span class="fw-medium text-body">{{ fitbit.activity_calories if fitbit.activity_calories is not none else '—' }}</span> active cal</span>
+          {% endif %}
+          {% if fitbit.screen_time_total is not none %}
+          <div class="col-6 col-sm-4">
+            <div class="data-pill">
+              <span class="dp-icon">📱</span>
+              <span class="dp-val">{{ fitbit.screen_time_total }}</span>
+              <span class="dp-lbl">min screen</span>
+            </div>
           </div>
-          <div class="col d-flex align-items-center gap-2">
-            <span class="text-secondary">&#x1F4F1;</span>
-            <span><span class="fw-medium text-body">{{ fitbit.screen_time_total if fitbit.screen_time_total is not none else '—' }}</span> min screen time</span>
-          </div>
+          {% endif %}
         </div>
       </div>
     </div>
     {% endif %}
 
-    {# Nutrition summary panel — only shown if food has been logged today #}
+    <!-- Nutrition summary -->
     {% if nutrition_summary and nutrition_summary.item_count > 0 %}
-    <div class="card mt-4 border-secondary-subtle">
-      <div class="card-header bg-body-secondary text-muted small fw-semibold d-flex justify-content-between align-items-center">
-        <span>Today's nutrition</span>
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center"
+           style="text-transform:none; letter-spacing:0; font-size:.875rem;">
+        <span style="font-weight:600; color:var(--pv-muted); text-transform:uppercase; letter-spacing:.04em; font-size:.8rem;">Today's Nutrition</span>
         {% if nutrition_summary.traffic_light == 'green' %}
-          <span class="badge bg-success">Green</span>
+          <span class="badge badge-green">Green</span>
         {% elif nutrition_summary.traffic_light == 'yellow' %}
-          <span class="badge bg-warning text-dark">Yellow</span>
+          <span class="badge badge-yellow">Yellow</span>
         {% else %}
-          <span class="badge bg-danger">Red</span>
+          <span class="badge badge-red">Red</span>
         {% endif %}
       </div>
-      <div class="card-body py-2">
-        <p class="small mb-0">
-          <span class="fw-medium text-body">{{ nutrition_summary.calories }}</span> kcal
-          &nbsp;|&nbsp;
-          <span class="fw-medium text-body">{{ nutrition_summary.protein_g }}g</span> protein
-          &nbsp;|&nbsp;
-          <span class="fw-medium text-body">{{ nutrition_summary.carbs_g }}g</span> carbs
-          &nbsp;|&nbsp;
-          <span class="fw-medium text-body">{{ nutrition_summary.fat_g }}g</span> fat
-          &nbsp;|&nbsp;
-          <span class="fw-medium text-body">{{ nutrition_summary.fibre_g }}g</span> fibre
-        </p>
+      <div class="card-body py-3">
+        <div class="row g-2 text-center">
+          <div class="col-4"><div class="fw-bold" style="font-size:1.1rem;">{{ nutrition_summary.calories }}</div><div class="small text-muted">kcal</div></div>
+          <div class="col-4"><div class="fw-bold" style="font-size:1.1rem;">{{ nutrition_summary.protein_g }}g</div><div class="small text-muted">protein</div></div>
+          <div class="col-4"><div class="fw-bold" style="font-size:1.1rem;">{{ nutrition_summary.fibre_g }}g</div><div class="small text-muted">fibre</div></div>
+        </div>
       </div>
     </div>
     {% endif %}

@@ -9,24 +9,208 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
         crossorigin="anonymous">
   <style>
-    body { padding-bottom: 2rem; }
-    .navbar-brand { font-weight: 600; }
+    :root {
+      --pv-primary:    #0f766e;
+      --pv-primary-dk: #0d5e57;
+      --pv-green:      #16a34a;
+      --pv-yellow:     #d97706;
+      --pv-red:        #dc2626;
+      --pv-bg:         #f1f5f9;
+      --pv-surface:    #ffffff;
+      --pv-border:     #e2e8f0;
+      --pv-text:       #1e293b;
+      --pv-muted:      #64748b;
+    }
+
+    body {
+      background: var(--pv-bg);
+      color: var(--pv-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      padding-bottom: 3rem;
+    }
+
+    /* ── Navbar ───────────────────────────────────────────────── */
+    .navbar {
+      background: var(--pv-text) !important;
+      padding-top: .75rem;
+      padding-bottom: .75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.25);
+    }
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -.01em;
+      color: #fff !important;
+    }
+    .navbar-brand span { color: var(--pv-primary); }
+    .nav-link {
+      font-size: .9rem;
+      font-weight: 500;
+      color: rgba(255,255,255,.7) !important;
+      padding: .4rem .75rem !important;
+      border-radius: 6px;
+      transition: background .15s, color .15s;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: rgba(255,255,255,.1);
+      color: #fff !important;
+    }
+    .navbar-toggler { border-color: rgba(255,255,255,.3); }
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255,255,255,.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    /* ── Cards ────────────────────────────────────────────────── */
+    .card {
+      border: 1px solid var(--pv-border);
+      border-radius: 12px;
+      background: var(--pv-surface);
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    }
+    .card-header {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--pv-border);
+      border-radius: 11px 11px 0 0 !important;
+      padding: .75rem 1.25rem;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--pv-muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    /* ── Buttons ──────────────────────────────────────────────── */
+    .btn-primary {
+      background: var(--pv-primary);
+      border-color: var(--pv-primary);
+      font-weight: 600;
+    }
+    .btn-primary:hover, .btn-primary:focus {
+      background: var(--pv-primary-dk);
+      border-color: var(--pv-primary-dk);
+    }
+    .btn-lg { padding: .75rem 1.5rem; border-radius: 10px; font-size: 1rem; }
+
+    /* ── Form controls ────────────────────────────────────────── */
+    .form-control, .form-select {
+      border-color: var(--pv-border);
+      border-radius: 8px;
+      font-size: .95rem;
+      padding: .5rem .85rem;
+      color: var(--pv-text);
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--pv-primary);
+      box-shadow: 0 0 0 3px rgba(15,118,110,.15);
+    }
+    .form-label {
+      font-weight: 500;
+      font-size: .9rem;
+      color: var(--pv-text);
+      margin-bottom: .35rem;
+    }
+    .form-range::-webkit-slider-thumb { background: var(--pv-primary); }
+    .form-range::-moz-range-thumb     { background: var(--pv-primary); }
+
+    /* ── Section headings inside cards ───────────────────────── */
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--pv-text);
+      margin-bottom: 1rem;
+    }
+
+    /* ── State badges ─────────────────────────────────────────── */
+    .badge-green  { background: var(--pv-green)  !important; color: #fff; }
+    .badge-yellow { background: var(--pv-yellow) !important; color: #fff; }
+    .badge-red    { background: var(--pv-red)    !important; color: #fff; }
+
+    /* ── Page header ──────────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--pv-text);
+      margin: 0;
+    }
+
+    /* ── Flash alerts ─────────────────────────────────────────── */
+    .alert { border-radius: 10px; font-size: .9rem; }
+
+    /* ── Insight card ─────────────────────────────────────────── */
+    .insight-card {
+      border-left: 4px solid var(--pv-primary) !important;
+      background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
+    }
+    .insight-card .insight-label {
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--pv-primary);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: .5rem;
+    }
+
+    /* ── Biometrics / data panels ─────────────────────────────── */
+    .data-pill {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .4rem .6rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      font-size: .82rem;
+    }
+    .data-pill .dp-icon { font-size: 1rem; line-height: 1; }
+    .data-pill .dp-val  { font-weight: 600; color: var(--pv-text); }
+    .data-pill .dp-lbl  { color: var(--pv-muted); }
+
+    /* ── Range value bubble ───────────────────────────────────── */
+    .range-val {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--pv-primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: .9rem;
+    }
+
+    /* ── Modal — ensure hidden until shown ───────────────────── */
+    .modal { display: none; }
+    .modal.show { display: block; }
+
+    /* ── Responsive tweaks ────────────────────────────────────── */
+    @media (max-width: 575px) {
+      .container { padding-left: 1rem; padding-right: 1rem; }
+      .card-body { padding: 1rem; }
+    }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
 <body>
 
 {% if current_user.is_authenticated %}
-<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand-md mb-4">
   <div class="container">
-    <a class="navbar-brand" href="{{ url_for('checkin') }}">Polyvagal Tracker</a>
+    <a class="navbar-brand" href="{{ url_for('checkin') }}">
+      <span>●</span> Polyvagal Tracker
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
             data-bs-target="#navbarNav" aria-controls="navbarNav"
             aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav ms-auto gap-1">
         <li class="nav-item">
           <a class="nav-link {% if request.endpoint == 'checkin' %}active{% endif %}"
              href="{{ url_for('checkin') }}">Check-in</a>
@@ -43,7 +227,7 @@
           <a class="nav-link {% if request.endpoint == 'insights' %}active{% endif %}"
              href="{{ url_for('insights') }}">Insights</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item ms-md-2">
           <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
         </li>
       </ul>
