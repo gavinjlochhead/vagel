@@ -1,13 +1,21 @@
 from datetime import date, datetime
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import (
     LoginManager, UserMixin, login_user, logout_user,
     login_required, current_user,
 )
 import config
-from modules import csv_logger, ha_client, fitbit
+from modules import csv_logger, ha_client, nutrition as nutrition_module
+from api import claude_client
+from api.nutrition_status import nutrition_status_bp
+
+try:
+    from modules import fitbit as fitbit_module
+except ImportError:
+    fitbit_module = None
 
 app = Flask(__name__)
+app.register_blueprint(nutrition_status_bp)
 app.secret_key = config.SECRET_KEY
 
 login_manager = LoginManager(app)
@@ -68,7 +76,7 @@ def checkin():
 
     if request.method == "POST":
         now = datetime.now()
-        snapshot = fitbit.get_fitbit_snapshot()
+        snapshot = fitbit_module.get_fitbit_snapshot() if fitbit_module else {}
         row = {
             "date": today,
             "time": now.strftime("%H:%M"),
@@ -94,11 +102,11 @@ def checkin():
             "activity_calories": snapshot["activity_calories"] if snapshot["activity_calories"] is not None else "",
             "distance": snapshot["distance"] if snapshot["distance"] is not None else "",
             "floors": snapshot["floors"] if snapshot["floors"] is not None else "",
-            # Nutrition fields left empty until Phase 3B
-            "protein_g": "",
-            "carbs_g": "",
-            "fat_g": "",
-            "fibre_g": "",
+            # Nutrition fields from today's nutrition log
+            "protein_g": nutrition_module.get_today_summary()["protein_g"],
+            "carbs_g": nutrition_module.get_today_summary()["carbs_g"],
+            "fat_g": nutrition_module.get_today_summary()["fat_g"],
+            "fibre_g": nutrition_module.get_today_summary()["fibre_g"],
             # Screen time from HA snapshot
             "screen_time_total": snapshot["screen_time_total"] if snapshot["screen_time_total"] is not None else "",
             "screen_time_last_hr": snapshot["screen_time_last_hr"] if snapshot["screen_time_last_hr"] is not None else "",
@@ -124,6 +132,34 @@ def checkin():
         ha_client.set_state(config.HA_CHECKIN_TRIGGER_ENTITY, row["triggered_by"])
         ha_client.set_state(config.HA_CHECKIN_NOTE_ENTITY, row["note"])
 
+        # Claude API integration
+        checkin_ctx = {
+            "ns_state": row["ns_state"],
+            "energy": row["energy"],
+            "focus": row["focus"],
+            "connection": row["connection"],
+            "sleep_hours": row["sleep_hours"],
+            "sleep_quality": row["sleep_quality"],
+            "wake_time": row["wake_time"],
+            "caffeine_count": row["caffeine_count"],
+            "caffeine_timing": row["caffeine_timing"],
+        }
+        fitbit_ctx = dict(snapshot) if snapshot else {}
+        nutrition_ctx = {}
+        recent = csv_logger.read_recent(7)
+
+        try:
+            claude_resp = claude_client.get_checkin_response(
+                checkin=checkin_ctx,
+                fitbit=fitbit_ctx,
+                nutrition=nutrition_ctx,
+                recent_history=recent,
+                note=row["note"],
+            )
+            session["claude_response"] = claude_resp
+        except Exception:
+            session["claude_response"] = None
+
         flash("Check-in saved", "success")
         return redirect(url_for("checkin"))
 
@@ -131,8 +167,14 @@ def checkin():
     all_rows = csv_logger.read_recent(100)
     todays_count = sum(1 for r in all_rows if r.get("date") == today)
 
-    snapshot = fitbit.get_fitbit_snapshot()
-    return render_template("checkin.html", todays_count=todays_count, fitbit=snapshot)
+    snapshot = fitbit_module.get_fitbit_snapshot() if fitbit_module else {}
+    claude_response = session.pop("claude_response", None)
+    return render_template(
+        "checkin.html",
+        todays_count=todays_count,
+        fitbit=snapshot,
+        claude_response=claude_response,
+    )
 
 
 @app.route("/nutrition")
