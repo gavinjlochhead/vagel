@@ -228,6 +228,13 @@ def trends_data():
     return jsonify(get_trend_data(days))
 
 
+@app.route("/api/trends/summary")
+@login_required
+def trends_summary():
+    days = int(request.args.get("days", 30))
+    return jsonify(get_summary_stats(days))
+
+
 @app.route("/insights")
 @login_required
 def insights():
