@@ -231,7 +231,27 @@ def trends_data():
 @app.route("/insights")
 @login_required
 def insights():
-    return render_template("insights.html")
+    weekly_insight = session.get("weekly_insight")
+    all_rows = csv_logger.read_recent(100)
+    row_count = len(all_rows)
+    return render_template("insights.html", weekly_insight=weekly_insight, row_count=row_count)
+
+
+@app.route("/insights/generate", methods=["POST"])
+@login_required
+def insights_generate():
+    rows = csv_logger.read_recent(30)
+    if not rows:
+        flash("No check-in data found. Complete some check-ins first.", "warning")
+        return redirect(url_for("insights"))
+
+    insight = claude_client.get_weekly_insights(rows)
+    if insight is None:
+        flash("Could not generate insights right now. Please try again later.", "danger")
+        return redirect(url_for("insights"))
+
+    session["weekly_insight"] = insight
+    return redirect(url_for("insights"))
 
 
 if __name__ == "__main__":
