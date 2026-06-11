@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_login import (
     LoginManager, UserMixin, login_user, logout_user,
     login_required, current_user,
@@ -7,6 +7,7 @@ from flask_login import (
 import config
 from modules import csv_logger, ha_client, nutrition as nutrition_module
 from api import claude_client
+from api.trends import get_trend_data, get_summary_stats
 from api.nutrition_status import nutrition_status_bp
 
 try:
@@ -94,22 +95,22 @@ def checkin():
             "caffeine_count": request.form.get("caffeine_count", ""),
             "caffeine_timing": request.form.get("caffeine_timing", ""),
             # Fitbit fields from HA snapshot
-            "steps": snapshot["steps"] if snapshot["steps"] is not None else "",
-            "resting_hr": snapshot["resting_hr"] if snapshot["resting_hr"] is not None else "",
-            "mins_very_active": snapshot["mins_very_active"] if snapshot["mins_very_active"] is not None else "",
-            "mins_fairly_active": snapshot["mins_fairly_active"] if snapshot["mins_fairly_active"] is not None else "",
-            "mins_sedentary": snapshot["mins_sedentary"] if snapshot["mins_sedentary"] is not None else "",
-            "activity_calories": snapshot["activity_calories"] if snapshot["activity_calories"] is not None else "",
-            "distance": snapshot["distance"] if snapshot["distance"] is not None else "",
-            "floors": snapshot["floors"] if snapshot["floors"] is not None else "",
+            "steps": snapshot.get("steps") or "",
+            "resting_hr": snapshot.get("resting_hr") or "",
+            "mins_very_active": snapshot.get("mins_very_active") or "",
+            "mins_fairly_active": snapshot.get("mins_fairly_active") or "",
+            "mins_sedentary": snapshot.get("mins_sedentary") or "",
+            "activity_calories": snapshot.get("activity_calories") or "",
+            "distance": snapshot.get("distance") or "",
+            "floors": snapshot.get("floors") or "",
             # Nutrition fields from today's nutrition log
             "protein_g": nutrition_module.get_today_summary()["protein_g"],
             "carbs_g": nutrition_module.get_today_summary()["carbs_g"],
             "fat_g": nutrition_module.get_today_summary()["fat_g"],
             "fibre_g": nutrition_module.get_today_summary()["fibre_g"],
             # Screen time from HA snapshot
-            "screen_time_total": snapshot["screen_time_total"] if snapshot["screen_time_total"] is not None else "",
-            "screen_time_last_hr": snapshot["screen_time_last_hr"] if snapshot["screen_time_last_hr"] is not None else "",
+            "screen_time_total": snapshot.get("screen_time_total") or "",
+            "screen_time_last_hr": snapshot.get("screen_time_last_hr") or "",
             "note": request.form.get("note", ""),
         }
 
@@ -145,7 +146,7 @@ def checkin():
             "caffeine_timing": row["caffeine_timing"],
         }
         fitbit_ctx = dict(snapshot) if snapshot else {}
-        nutrition_ctx = {}
+        nutrition_ctx = nutrition_module.get_today_summary()
         recent = csv_logger.read_recent(7)
 
         try:
@@ -169,11 +170,13 @@ def checkin():
 
     snapshot = fitbit_module.get_fitbit_snapshot() if fitbit_module else {}
     claude_response = session.pop("claude_response", None)
+    nutrition_summary = nutrition_module.get_today_summary()
     return render_template(
         "checkin.html",
         todays_count=todays_count,
         fitbit=snapshot,
         claude_response=claude_response,
+        nutrition_summary=nutrition_summary,
     )
 
 
@@ -186,7 +189,16 @@ def nutrition():
 @app.route("/trends")
 @login_required
 def trends():
-    return render_template("trends.html")
+    days = int(request.args.get("days", 30))
+    summary_stats = get_summary_stats(days)
+    return render_template("trends.html", summary_stats=summary_stats, days=days)
+
+
+@app.route("/api/trends/data")
+@login_required
+def trends_data():
+    days = int(request.args.get("days", 30))
+    return jsonify(get_trend_data(days))
 
 
 @app.route("/insights")

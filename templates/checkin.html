@@ -6,6 +6,25 @@
 <div class="row justify-content-center">
   <div class="col-12 col-lg-8">
 
+    {% if claude_response %}
+    <div class="card border-0 shadow-sm mb-4" style="border-left: 4px solid #6c757d !important;">
+      <div class="card-body">
+        <h6 class="text-muted mb-3">NS Insight</h6>
+        <p class="mb-2"><strong>{{ claude_response.state_interpretation }}</strong></p>
+        <p class="mb-2">→ {{ claude_response.immediate_suggestion }}</p>
+        {% if claude_response.pattern_observation %}
+        <p class="mb-2 text-muted small">Pattern: {{ claude_response.pattern_observation }}</p>
+        {% endif %}
+        {% if claude_response.nutrition_note %}
+        <p class="mb-1 text-muted small">Nutrition: {{ claude_response.nutrition_note }}</p>
+        {% endif %}
+        {% if claude_response.activity_note %}
+        <p class="mb-0 text-muted small">Activity: {{ claude_response.activity_note }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="mb-0">Check-in</h2>
       {% if todays_count > 0 %}
